@@ -1,0 +1,27 @@
+{
+    "nodes": [
+        {
+            "id": 0,
+            "type": "input",
+            "x": 384.0,
+            "y": 864.0,
+            "uniforms": {}
+        },
+        {
+            "id": 1,
+            "type": "Contrast",
+            "x": 895,
+            "y": 812,
+            "uniforms": {
+                "brightness": 0.0,
+                "contrast": 2.0
+            }
+        }
+    ],
+    "connections": [
+        {
+            "input": 0,
+            "output": 1
+        }
+    ]
+}
