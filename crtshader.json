@@ -2,10 +2,14 @@
     "nodes": [
         {
             "id": 0,
-            "type": "input",
+            "type": "Image Input",
             "x": 60.0,
             "y": 716.0,
-            "uniforms": {}
+            "uniforms": {
+                "Input Texture": "textures/testimg.jpg",
+                "width": 1020,
+                "height": 576
+            }
         },
         {
             "id": 5,
@@ -62,16 +66,16 @@
         {
             "id": 10,
             "type": "Chromatic Aberration",
-            "x": 1410,
+            "x": 1412,
             "y": 720,
             "uniforms": {
                 "mouseFocusPoint": [
                     0.5,
                     0.5
                 ],
-                "redOffset": 0.02,
-                "greenOffset": 0.015,
-                "blueOffset": -0.02
+                "redOffset": 0.007,
+                "greenOffset": 0.012,
+                "blueOffset": 0.001
             }
         },
         {

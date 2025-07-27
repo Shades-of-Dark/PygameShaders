@@ -2,7 +2,8 @@
 "text-field": "#838383",
 "button-color": "#808080",
 "selected": "#E64B3D",
-  "text-color": "678790",
-  "text-color2": "#F4E7B2",
-  "outline": "090909"
+  "text-color": "#FFFFFF",
+  "outline": "#090909",
+  "bg": "#1F1F1F"
+
 }

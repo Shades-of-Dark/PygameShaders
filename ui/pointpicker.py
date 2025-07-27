@@ -59,7 +59,7 @@ class PointPicker:
         label_y = self.y + 2
         button_x = self.x
         button_y = self.y
-        reset_x = self.x + self.width + spacing
+        reset_x = self.x + self.width + spacing - reset_width/2
         reset_y = self.y
 
         # Update reset button rect
@@ -68,20 +68,27 @@ class PointPicker:
         self.reset_button.width = reset_width + 6
         self.reset_button.height = reset_height + 4
 
+        text_c = (255,255,255)
+        select_c = (255,0,0)
+        bg_button_c = (60, 60, 60)
+        if hasattr(self, "theme"):
+            text_c = self.theme["text-color"]
+            select_c = self.theme["selected"]
+            bg_button_c = self.theme["bg"]
         # Draw label
-        surf.blit(font.render(self.label, False, (255, 255, 255)), (label_x, label_y))
+        surf.blit(font.render(self.label, True, text_c), (label_x, label_y))
 
         # Draw main point picker button
-        color = (230, 75, 61) if self.oneTime else (31, 31, 31)
+        color = select_c if self.oneTime else bg_button_c
         pygame.draw.rect(surf, color, pygame.Rect(button_x, button_y, self.width, self.height))
 
         # Draw point text above button
-        surf.blit(font.render(point_text, False, (255, 255, 255)),(button_x + self.width / 2 - point_text_width / 2,
+        surf.blit(font.render(point_text, True, text_c),(button_x + self.width / 2 - point_text_width / 2,
                                                                   self.y - 2))
 
         # Draw reset button
-        pygame.draw.rect(surf, (60, 60, 60), self.reset_button)
-        surf.blit(font.render(reset_label,False, (230, 75, 61)), (self.reset_button.x + 3, self.reset_button.y + 2))
+        pygame.draw.rect(surf, bg_button_c, self.reset_button)
+        surf.blit(font.render(reset_label,True, select_c), (self.reset_button.x + 3, self.reset_button.y + 2))
 
     def is_button_clicked(self, mx, my):
         return self.x <= mx <= self.x + self.width and self.y <= my <= self.y + self.height

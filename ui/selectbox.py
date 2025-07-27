@@ -25,15 +25,24 @@ class SelectBox():
         self.active = False
 
     def draw(self, surf, font):
-        color = (230, 75, 61) if self.dropDown else (31, 31, 31)
+        select_c = (255,0,0)
+        text_c = (255, 255, 255)
+        bgcolor = (31,31,31)
+
+        if hasattr(self, "theme"):
+            select_c = self.theme["selected"]
+            text_c = self.theme["text-color"]
+            bgcolor = self.theme["bg"]
+
+        color = select_c if self.dropDown else bgcolor
         pygame.draw.rect(surf,color, pygame.Rect(self.x, self.y, self.width, self.height))
-        surf.blit(font.render(f"{self.label}: {self.value}", False, (255, 255, 255)), (self.x, self.y))
+        surf.blit(font.render(f"{self.label}: {self.value}", True, text_c), (self.x, self.y))
 
         if self.dropDown:
             i= 0
             for r in self.choice_rects:
-                pygame.draw.rect(surf, (65, 65, 67), r)
-                surf.blit(font.render(str(self.choices[i]),False,(255, 255, 255)), (r.x, r.y, ))
+                pygame.draw.rect(surf, bgcolor, r)
+                surf.blit(font.render(str(self.choices[i]),True,text_c), (r.x, r.y, ))
                 i += 1
 
     def getValue(self):

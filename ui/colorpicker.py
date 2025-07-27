@@ -1,17 +1,19 @@
 import pygame
 import json
 
+
 class ColorPicker():
-    def __init__(self, x, y, width, height, label,theme=None, default=(255.0, 255.0, 255.0)):
+    def __init__(self, x, y, width, height, label, theme=None, default=(255.0, 255.0, 255.0)):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
         self.label = label
         self.button = pygame.Rect(x, y, width, height)
-        if theme is not None:
-            with open(theme, "r") as f:
-                self.theme = json.load(f)
+
+        with open(theme, "r") as f:
+            self.theme = json.load(f)
+
         self.active = True
         self.oneTime = False
         self.default = default
@@ -54,20 +56,27 @@ class ColorPicker():
         reset_y = self.y
 
         # Update reset button rect
-        self.reset_button.x = reset_x
+        self.reset_button.x = reset_x - reset_width/2
         self.reset_button.y = reset_y
         self.reset_button.width = reset_width + 6
         self.reset_button.height = reset_height + 4
 
         # Draw label
-        label_c = (255,255,255)
-        if hasattr(ColorPicker, "theme"):
+        label_c = (255, 255, 255)
+        selectColor = (255, 255, 255)
+        button_color = (255,255,255)
+        text_color = (255, 255, 255)
+        if hasattr(self, "theme"):
             label_c = self.theme["text-color"]
-        surf.blit(font.render(self.label, False, ), (label_x, label_y))
+            text_color = self.theme["selected"]
+            selectColor = self.theme["selected"] if self.oneTime else self.theme["bg"]
+            button_color = self.theme["bg"]
+
+        surf.blit(font.render(self.label, True, label_c), (label_x, label_y))
 
         # Draw main button
-        color = (230, 75, 61) if self.oneTime else (31, 31, 31)
-        pygame.draw.rect(surf, color, pygame.Rect(button_x, button_y, self.width, self.height))
+
+        pygame.draw.rect(surf, selectColor, pygame.Rect(button_x, button_y, self.width, self.height))
 
         # Draw color swatch
         pygame.draw.rect(surf, self.boxColor, pygame.Rect(swatch_x, swatch_y, self.height, self.height))
@@ -75,13 +84,16 @@ class ColorPicker():
         # Draw RGB value on top of button
         rgb_text = f"({int(self.normal[0])}, {int(self.normal[1])}, {int(self.normal[2])})"
         rgb_width, _ = font.size(rgb_text)
-        surf.blit(font.render(rgb_text, False, (255,255,255)), (button_x + self.width / 2 - rgb_width / 2, self.y - 2))
+        surf.blit(font.render(rgb_text, True, label_c),
+                  (button_x + self.width / 2 - rgb_width / 2, self.y - 2))
 
         # Draw reset button
-        reset_color = (60, 60, 60)
-        text_color = (230, 75, 61)
-        pygame.draw.rect(surf, reset_color, pygame.Rect(self.reset_button.x, self.reset_button.y,self.reset_button.width, self.reset_button.height))
-        surf.blit(font.render(reset_label, False, text_color), (self.reset_button.x + 3, self.reset_button.y + 2))
+        reset_color = button_color
+
+        pygame.draw.rect(surf, reset_color,
+                         pygame.Rect(self.reset_button.x, self.reset_button.y, self.reset_button.width,
+                                     self.reset_button.height))
+        surf.blit(font.render(reset_label, True, text_color), (self.reset_button.x + 3, self.reset_button.y + 2))
 
         # Handle eyedropper if active
         if self.oneTime:
@@ -104,7 +116,7 @@ class ColorPicker():
         else:
             self.reset = "R"
         if self.active and self.oneTime:
-            if self.x + self.image.get_width() >= mx >= self.x and self.y + self.image.get_height() >= my >= self.y:
+            if self.x + self.image.get_width() > mx >= self.x and self.y + self.image.get_height() > my >= self.y:
                 self.boxColor = self.image.get_at((mx - self.x, my - self.y))
         else:
             self.boxColor = self.normal

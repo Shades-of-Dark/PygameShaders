@@ -2,7 +2,7 @@ import pygame
 import json
 
 class TextInput:
-    def __init__(self, font,theme=None, max_width=None):
+    def __init__(self, font, max_width=None,theme=None,):
         self.text = ""
         self.font = font
         self.cursor_visible = True
