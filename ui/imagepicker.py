@@ -26,7 +26,6 @@ class ImagePicker:
 
     def handle_event(self, events):
 
-
         if self.active:
             mx, my = pygame.mouse.get_pos()
             hovering_reset = self.reset_button.collidepoint(mx, my)
@@ -36,7 +35,7 @@ class ImagePicker:
                     if hovering_reset:
                         self.path = self.default
                         return "reset"
-                    elif self.button.collidepoint(mx,my):
+                    elif self.button.collidepoint(mx, my):
                         return "confirm"
         return "null"
 
@@ -57,7 +56,7 @@ class ImagePicker:
         reset_y = self.y
 
         # Update reset button rect
-        self.reset_button.x = reset_x - reset_width/2
+        self.reset_button.x = reset_x - reset_width / 2
         self.reset_button.y = reset_y
         self.reset_button.width = reset_width + 6
         self.reset_button.height = reset_height + 4

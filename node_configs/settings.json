@@ -8,16 +8,30 @@
             "width": {
                 "type": "float",
                 "value": 960,
-                "min": 128,
-                "max": 960,
-                "step": 16
+                "min": 1,
+                "max": 1920,
+                "step": 1
             },
             "height": {
                 "type": "float",
-                "value": 82,
-                "min": 128,
+                "value": 540,
+                "min": 1,
+                "max": 1080,
+                "step": 1
+            },
+            "x": {
+                "type": "float",
+                "value": 0,
+                "min": -960,
+                "max": 960,
+                "step": 1
+            },
+            "y": {
+                "type": "float",
+                "value": 0,
+                "min": -540,
                 "max": 540,
-                "step": 16
+                "step": 1
             }
         }
     },

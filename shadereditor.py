@@ -15,6 +15,7 @@ from ui.imagepicker import ImagePicker
 from ui.plusbutton import PlusButton
 import json
 import os
+from pathlib import Path
 from lights import *
 import pygame_gui
 
@@ -108,21 +109,32 @@ def main():
                 "width": {
                     "type": "float",
                     "value": output_window.get_width(),
-                    "min": 128,
-                    "max": output_window.get_width(),
-                    "step": 16,
+                    "min": 1,
+                    "max": output_window.get_width() * 2,
+                    "step": 1,
                 },
-                "height":
-                    {
-                        "type": "float",
-                        "value": 82,
-                        "min": 128,
-                        "max": output_window.get_height(),
-                        "step": 16,
-                    }
-
+                "height": {
+                    "type": "float",
+                    "value": output_window.get_height(),
+                    "min": 1,
+                    "max": output_window.get_height() * 2,
+                    "step": 1,
+                },
+                "x": {
+                    "type": "float",
+                    "value": 0,
+                    "min": -output_window.get_width(),
+                    "max": output_window.get_width(),
+                    "step": 1,
+                },
+                "y": {
+                    "type": "float",
+                    "value": 0,
+                    "min": -output_window.get_height(),
+                    "max": output_window.get_height(),
+                    "step": 1,
+                },
             }
-
         },
         "Pixelation": {
             "numInputs": 1,
@@ -899,18 +911,22 @@ def main():
 
             if node.type == "Image Input":
                 output_window.fill((0, 0, 0, 0))
+                img_x, img_y = 0, 0
+                for key, w in node.widgets:
+                    if key == "x":
+                        img_x = int(w.getValue())
+                    elif key == "y":
+                        img_y = int(w.getValue())
                 if use_geometry_pass:
                     engine.shaderManager.geometry_pass([
                         (sky, (0, 0), "sky"),
-                        (inputTex, (0, 375), "ground"),
+                        (inputTex, (img_x, img_y), "ground"),
                         (cueBall, (600, 290), "object")
                     ])
                     node_outputs[node] = engine.shaderManager.read_texture
                 else:
-                    # Plain old rendering - just blit or draw textures directly
-                    output_window.blit(inputTex, (0, 375))
-                    output_window.blit(cueBall, (600, 290))
-                    node_outputs[node] = output_window  # or however you track output
+                    output_window.blit(inputTex, (img_x, img_y))
+                    node_outputs[node] = output_window
             else:
                 if node.type != "Geometry Pass":
                     node_outputs[node] = apply_node_effect(node)
@@ -1066,11 +1082,17 @@ def main():
 
         # Handle events (same as before)
         for node in nodes:
+
             if hasattr(node, "widgets"):
+                # Disable widgets for non-current nodes
 
                 lights = engine.lights  # This is now a direct reference
 
                 for uniform_key, widget in node.widgets:
+                    widget.disable()
+                    if currentnode is not None:
+                        if currentnode == node:
+                            widget.enable()
                     if isinstance(widget, PlusButton):
                         additionlight = widget.handle_event(events, font)
                         if additionlight is not None:
@@ -1083,9 +1105,6 @@ def main():
                             elif additionlight == "reset_light":
                                 lights.clear()  # clears node.lights list
                                 node.widgets = create_widgets_for_node(node)
-                        continue
-
-                    if len(lights) == 0:
                         continue
 
                     if isinstance(widget, PointPicker):
@@ -1126,9 +1145,10 @@ def main():
                             dialog = pygame_gui.windows.UIFileDialog(
                                 pygame.Rect(uisurface.get_width() / 2 * 0.5, uisurface.get_height() / 2 * 0.5,
                                             uisurface.get_width() * 0.5, uisurface.get_height() * 0.5), uim,
-                                initial_file_path=os.getcwd(), allowed_suffixes={".png", ".jpg", ".jpeg"},
+                                initial_file_path=os.getcwd(),
+                                allowed_suffixes={".png", ".jpg", ".jpeg"},
                                 allow_picking_directories=False,
-                                allow_existing_files_only=True, window_title="Select a file")
+                                allow_existing_files_only=True, window_title="Select an Image")
                             dialogNodeType = node
 
         if show_node_menu:
@@ -1181,12 +1201,17 @@ def main():
                         uifiledialog.kill()
                     elif event.ui_element == dialog and dialog is not None:
                         aPath = event.text
-
-                        imgpath = aPath.replace(os.getcwd() + "\\", "")
-                        fileNameQueue.append((dialogNodeType, imgpath))
+                        if os.path.splitext(aPath)[1].lower() in {".png", ".jpg", ".jpeg"}:
+                            imgpath = aPath.replace(os.getcwd() + "\\", "")
+                            fileNameQueue.append((dialogNodeType, imgpath))
 
                 else:
                     print("file not found")
+            if event.type == pygame_gui.UI_SELECTION_LIST_NEW_SELECTION and dialog is not None:
+                if event.ui_element == dialog.file_selection_list:
+                    candidate = Path(dialog.current_directory_path) / event.text
+                    if candidate.is_dir():
+                        dialog._change_directory_path(candidate)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
@@ -1338,60 +1363,46 @@ def main():
 
         # Execute the node chain and apply effects
         if nodes and nodes[0].type == "Image Input":
-            image_widget = nodes[0].widgets[0][1]  # First widget is the ImagePicker
-            width_widget = nodes[0].widgets[1][1]  # Second widget is width slider
-            height_widget = nodes[0].widgets[2][1]  # Third widget is height slider
+            image_widget = nodes[0].widgets[0][1]
+            width_widget = nodes[0].widgets[1][1]
+            height_widget = nodes[0].widgets[2][1]
 
             current_path = image_widget.path
             current_width = int(width_widget.getValue())
             current_height = int(height_widget.getValue())
 
-            # Initialize tracking variables if they don't exist
+            def fit_to_window(img):
+                iw, ih = img.get_size()
+                scale = min(texture_width / iw, texture_height / ih)
+                return max(1, int(iw * scale)), max(1, int(ih * scale))
+
             if not hasattr(image_widget, '_last_path'):
-                image_widget._last_path = current_path
-                image_widget._last_width = current_width
-                image_widget._last_height = current_height
-                # Force initial load
-                image_widget.path = current_path
                 image_widget.img = pygame.image.load(current_path).convert_alpha()
-                w = round(texture_width / image_widget.img.get_width())
-                s = round(texture_height / image_widget.img.get_height())
-                current_width = image_widget.img.get_width() * w
-                current_height = image_widget.img.get_height() * s
+                current_width, current_height = fit_to_window(image_widget.img)
                 width_widget.setValue(current_width)
                 height_widget.setValue(current_height)
                 image_widget.img = pygame.transform.scale(image_widget.img, (current_width, current_height))
                 input_img = image_widget.img
-                image_widget.img = pygame.transform.scale(image_widget.img, (current_width, current_height))
-                input_img = image_widget.img
+                image_widget._last_path = current_path
+                image_widget._last_width = current_width
+                image_widget._last_height = current_height
 
-
-            # Check if path changed - requires full reload
             elif image_widget._last_path != current_path:
-                image_widget.path = current_path
                 image_widget.img = pygame.image.load(current_path).convert_alpha()
-                s = round(texture_height / image_widget.img.get_height())
-                current_width = image_widget.img.get_width() * s
-                current_height = image_widget.img.get_height() * s
+                current_width, current_height = fit_to_window(image_widget.img)
                 width_widget.setValue(current_width)
                 height_widget.setValue(current_height)
                 image_widget.img = pygame.transform.scale(image_widget.img, (current_width, current_height))
                 input_img = image_widget.img
-
-                # Update all tracking values
                 image_widget._last_path = current_path
                 image_widget._last_width = current_width
                 image_widget._last_height = current_height
 
-            # Check if only dimensions changed - just rescale existing image
             elif (image_widget._last_width != current_width or
                   image_widget._last_height != current_height):
-                # Reload original image and scale to new dimensions
                 original_img = pygame.image.load(image_widget.path).convert_alpha()
                 image_widget.img = pygame.transform.scale(original_img, (current_width, current_height))
                 input_img = image_widget.img
-
-                # Update dimension tracking
                 image_widget._last_width = current_width
                 image_widget._last_height = current_height
 
@@ -1598,12 +1609,6 @@ def main():
 
             node.update(mx, my, rect_x, rect_y, rect_x + rect_width - node.width, rect_y + rect_height - node.height)
 
-            # Disable widgets for non-current nodes
-            for uniform_key, slider in node.widgets:
-                slider.disable()
-                if currentnode is not None:
-                    if currentnode == node:
-                        slider.enable()
             if fileNameQueue:
                 if fileNameQueue[0][0] == node:
                     node.widgets[0][1].path = fileNameQueue[0][1]
