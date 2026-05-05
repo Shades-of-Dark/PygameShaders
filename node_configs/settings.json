@@ -1,5 +1,6 @@
 {
     "Image Input": {
+        "numInputs": 0,
         "uniforms": {
             "Input Texture": {
                 "type": "sampler2D",

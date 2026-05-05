@@ -100,6 +100,7 @@ def main():
 
     effect_settings = {
         "Image Input": {
+            "numInputs": 0,
             "uniforms": {
                 "Input Texture":
                     {
@@ -793,6 +794,21 @@ def main():
         visited = set()
         node_outputs = {}
 
+        output_window.fill((0, 0, 0, 0))
+        if not use_geometry_pass:
+            for n in nodes:
+                if n.type == "Image Input" and hasattr(n, 'widgets') and n.widgets:
+                    n_x, n_y, n_img = 0, 0, None
+                    for key, w in n.widgets:
+                        if key == "x":
+                            n_x = snap_edge(int(w.getValue()), int(w.min), int(w.max))
+                        elif key == "y":
+                            n_y = snap_edge(int(w.getValue()), int(w.min), int(w.max))
+                        elif key == "Input Texture" and hasattr(w, 'img'):
+                            n_img = w.img
+                    if n_img is not None:
+                        output_window.blit(n_img, (n_x, n_y))
+
         def get_node_inputs(node):
             inputs = [None] * node.num_inputs
             for conn in connects:
@@ -910,14 +926,13 @@ def main():
             node.color = (47, 48, 54)
 
             if node.type == "Image Input":
-                output_window.fill((0, 0, 0, 0))
-                img_x, img_y = 0, 0
-                for key, w in node.widgets:
-                    if key == "x":
-                        img_x = int(w.getValue())
-                    elif key == "y":
-                        img_y = int(w.getValue())
                 if use_geometry_pass:
+                    img_x, img_y = 0, 0
+                    for key, w in node.widgets:
+                        if key == "x":
+                            img_x = snap_edge(int(w.getValue()), int(w.min), int(w.max))
+                        elif key == "y":
+                            img_y = snap_edge(int(w.getValue()), int(w.min), int(w.max))
                     engine.shaderManager.geometry_pass([
                         (sky, (0, 0), "sky"),
                         (inputTex, (img_x, img_y), "ground"),
@@ -925,7 +940,6 @@ def main():
                     ])
                     node_outputs[node] = engine.shaderManager.read_texture
                 else:
-                    output_window.blit(inputTex, (img_x, img_y))
                     node_outputs[node] = output_window
             else:
                 if node.type != "Geometry Pass":
@@ -1023,7 +1037,6 @@ def main():
     delete = False
     show_node_menu = False
     node_types = list(effect_settings.keys())
-    node_types.remove("Image Input")
     menu_position = (screen_width // 2, screen_height * 5 / 7)
     filtered_nodes = []
     clock = pygame.time.Clock()
@@ -1046,6 +1059,20 @@ def main():
     dialog = None
     noInputWindow = pygame.Surface(output_window.get_size())
     surf = pygame.image.load("textures/scene.png").convert_alpha()
+
+    def fit_to_window(img):
+        iw, ih = img.get_size()
+        scale = min(texture_width / iw, texture_height / ih)
+        return max(1, int(iw * scale)), max(1, int(ih * scale))
+
+    def snap_edge(val, min_val, max_val):
+        span = max_val - min_val
+        zone = span * 0.03
+        if val <= min_val + zone:
+            return min_val
+        if val >= max_val - zone:
+            return max_val
+        return val
 
     input_img = nodes[0].widgets[0][1].img
 
@@ -1362,19 +1389,15 @@ def main():
                     allow_existing_files_only=True, window_title="Select a file")
 
         # Execute the node chain and apply effects
-        if nodes and nodes[0].type == "Image Input":
-            image_widget = nodes[0].widgets[0][1]
-            width_widget = nodes[0].widgets[1][1]
-            height_widget = nodes[0].widgets[2][1]
-
+        for node in nodes:
+            if node.type != "Image Input" or not hasattr(node, 'widgets') or len(node.widgets) < 3:
+                continue
+            image_widget = node.widgets[0][1]
+            width_widget = node.widgets[1][1]
+            height_widget = node.widgets[2][1]
             current_path = image_widget.path
             current_width = int(width_widget.getValue())
             current_height = int(height_widget.getValue())
-
-            def fit_to_window(img):
-                iw, ih = img.get_size()
-                scale = min(texture_width / iw, texture_height / ih)
-                return max(1, int(iw * scale)), max(1, int(ih * scale))
 
             if not hasattr(image_widget, '_last_path'):
                 image_widget.img = pygame.image.load(current_path).convert_alpha()
@@ -1382,7 +1405,6 @@ def main():
                 width_widget.setValue(current_width)
                 height_widget.setValue(current_height)
                 image_widget.img = pygame.transform.scale(image_widget.img, (current_width, current_height))
-                input_img = image_widget.img
                 image_widget._last_path = current_path
                 image_widget._last_width = current_width
                 image_widget._last_height = current_height
@@ -1393,18 +1415,17 @@ def main():
                 width_widget.setValue(current_width)
                 height_widget.setValue(current_height)
                 image_widget.img = pygame.transform.scale(image_widget.img, (current_width, current_height))
-                input_img = image_widget.img
                 image_widget._last_path = current_path
                 image_widget._last_width = current_width
                 image_widget._last_height = current_height
 
-            elif (image_widget._last_width != current_width or
-                  image_widget._last_height != current_height):
+            elif image_widget._last_width != current_width or image_widget._last_height != current_height:
                 original_img = pygame.image.load(image_widget.path).convert_alpha()
                 image_widget.img = pygame.transform.scale(original_img, (current_width, current_height))
-                input_img = image_widget.img
                 image_widget._last_width = current_width
                 image_widget._last_height = current_height
+
+            input_img = image_widget.img
 
         if delete and currentnode is not None and currentnode.type != "Image Input":
             connects = [con for con in connects if con.inp != currentnode and con.out != currentnode]
