@@ -5,3 +5,6 @@ Essentially, you connect nodes via a graph-like interface similar to the Davinci
 
 
 Uses pygame + GLSL.
+
+
+The name of this shader editor is the Lumos engine.
