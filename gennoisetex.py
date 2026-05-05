@@ -2,7 +2,7 @@ import sys
 import noise
 
 import pygame
-s = 128
+s = 32
 screen = pygame.display.set_mode((s, s))
 
 for y in range(s):

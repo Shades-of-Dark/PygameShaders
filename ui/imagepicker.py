@@ -3,7 +3,7 @@ import json
 
 
 class ImagePicker:
-    def __init__(self, x, y, width, height, label, theme=None, default="textures/testimg.jpg"):
+    def __init__(self, x, y, width, height, label, theme=None, default="textures/noisetex.jpg"):
         self.x, self.y = x, y
         self.width, self.height = width, height
         self.label = label
@@ -87,5 +87,5 @@ class ImagePicker:
         self.active = False
 
     def reloadImage(self, w, h):
-        self.img = pygame.image.load(self.path)
+        self.img = pygame.image.load(self.path).convert_alpha()
         self.img = pygame.transform.scale(self.img, (w, h))

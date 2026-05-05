@@ -1,0 +1,61 @@
+{
+    "nodes": [
+        {
+            "id": 0,
+            "type": "Image Input",
+            "x": 384.0,
+            "y": 864.0,
+            "num_inputs": 0,
+            "uniforms": {
+                "Input Texture": "textures/scene.png",
+                "width": 960,
+                "height": 540
+            }
+        },
+        {
+            "id": 1,
+            "type": "Normal Map Generation",
+            "x": 988,
+            "y": 768,
+            "num_inputs": 1,
+            "uniforms": {}
+        },
+        {
+            "id": 2,
+            "type": "Texture Input",
+            "x": 690,
+            "y": 810,
+            "num_inputs": 0,
+            "uniforms": {
+                "Lookup Texture": "textures\\cueball.png",
+                "width": 32,
+                "height": 32
+            }
+        },
+        {
+            "id": 3,
+            "type": "Deferred Lighting",
+            "x": 1234,
+            "y": 886,
+            "num_inputs": 2,
+            "uniforms": {}
+        }
+    ],
+    "connections": [
+        {
+            "input": 2,
+            "output": 1,
+            "input_index": 0
+        },
+        {
+            "input": 0,
+            "output": 3,
+            "input_index": 0
+        },
+        {
+            "input": 1,
+            "output": 3,
+            "input_index": 1
+        }
+    ]
+}

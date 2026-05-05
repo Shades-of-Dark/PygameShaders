@@ -3,47 +3,147 @@
         "uniforms": {
             "Input Texture": {
                 "type": "sampler2D",
-                "path": "textures/testimg.jpg"
+                "path": "textures/scene.png"
             },
             "width": {
                 "type": "float",
-                "value": 1024,
-                "min": 480,
-                "max": 1024,
-                "step": 20
+                "value": 960,
+                "min": 128,
+                "max": 960,
+                "step": 16
             },
             "height": {
                 "type": "float",
-                "value": 576,
-                "min": 270,
-                "max": 576,
-                "step": 20
+                "value": 82,
+                "min": 128,
+                "max": 540,
+                "step": 16
+            }
+        }
+    },
+    "Pixelation": {
+        "numInputs": 1,
+        "uniforms": {
+            "pixelSize": {
+                "type": "float",
+                "value": 320,
+                "min": 240,
+                "max": 800,
+                "default": 320,
+                "step": 1.0
+            }
+        }
+    },
+    "Geometry Pass": {
+        "numInputs": 1,
+        "uniforms": {}
+    },
+    "Deferred Lighting": {
+        "numInputs": 1,
+        "uniforms": {
+            "lights": {
+                "type": "light_array",
+                "struct": [
+                    {
+                        "name": "pos",
+                        "type": "vec2",
+                        "default": [
+                            0.5,
+                            0.5
+                        ],
+                        "point": [
+                            0.5,
+                            0.5
+                        ]
+                    },
+                    {
+                        "name": "color",
+                        "type": "vec3",
+                        "default": [
+                            255.0,
+                            255.0,
+                            255.0
+                        ],
+                        "color": [
+                            255.0,
+                            255.0,
+                            255.0
+                        ]
+                    },
+                    {
+                        "name": "intensity",
+                        "type": "float",
+                        "min": 0.0,
+                        "max": 2.0,
+                        "step": 0.01,
+                        "default": 0.9,
+                        "value": 0.9
+                    },
+                    {
+                        "name": "radius",
+                        "type": "float",
+                        "min": 0.01,
+                        "max": 5.0,
+                        "step": 0.01,
+                        "default": 0.1,
+                        "value": 0.1
+                    },
+                    {
+                        "name": "directionAngle",
+                        "type": "float",
+                        "min": 0.0,
+                        "max": 359.0,
+                        "step": 1.0,
+                        "default": 0.0,
+                        "value": 0.0
+                    },
+                    {
+                        "name": "coneHalfAngle",
+                        "type": "float",
+                        "min": 1.0,
+                        "max": 90.0,
+                        "step": 1.0,
+                        "default": 30.0,
+                        "value": 30.0
+                    },
+                    {
+                        "name": "volumetricIntensity",
+                        "type": "float",
+                        "min": 0.0,
+                        "max": 5.0,
+                        "step": 0.01,
+                        "default": 0.2,
+                        "value": 0.2
+                    }
+                ]
             }
         }
     },
     "Texture Input": {
+        "numInputs": 0,
         "uniforms": {
             "Lookup Texture": {
                 "type": "sampler2D",
-                "path": "textures/testimg.jpg"
+                "path": "textures/noisetex.png"
             },
             "width": {
                 "type": "float",
-                "value": 1024,
-                "min": 1,
-                "max": 1024,
-                "step": 20
+                "value": 32,
+                "min": 16,
+                "max": 960,
+                "step": 16
             },
             "height": {
                 "type": "float",
-                "value": 576,
-                "min": 1,
-                "max": 576,
-                "step": 20
+                "value": 32,
+                "min": 16,
+                "max": 540,
+                "step": 16
             }
         }
     },
     "Contrast": {
+        "numInputs": 1,
         "uniforms": {
             "brightness": {
                 "type": "float",
@@ -62,6 +162,7 @@
         }
     },
     "Pulse": {
+        "numInputs": 1,
         "uniforms": {
             "pulseSpeed": {
                 "type": "float",
@@ -79,7 +180,35 @@
             }
         }
     },
+    "Directional Light": {
+        "numInputs": 1,
+        "uniforms": {
+            "lightDirection": {
+                "type": "vec2",
+                "value": [
+                    -0.2,
+                    -1.0
+                ]
+            },
+            "intensity": {
+                "type": "float",
+                "value": 1.0,
+                "min": 0.0,
+                "max": 5.0,
+                "step": 0.1
+            },
+            "lightColor": {
+                "type": "vec3",
+                "value": [
+                    255.0,
+                    255.0,
+                    255.0
+                ]
+            }
+        }
+    },
     "Blur": {
+        "numInputs": 1,
         "uniforms": {
             "blurRadius": {
                 "type": "float",
@@ -91,31 +220,33 @@
         }
     },
     "Flicker": {
+        "numInputs": 2,
         "uniforms": {
             "noiseIntensity": {
                 "type": "float",
-                "value": 0.1,
-                "min": 0.0,
-                "max": 0.3,
+                "value": 0.84,
+                "min": 0.05,
+                "max": 0.9,
                 "step": 0.01
             },
             "noiseScale": {
                 "type": "float",
-                "value": 0.02,
-                "min": 0.001,
-                "max": 0.1,
-                "step": 0.001
+                "value": 6.0,
+                "min": 2.0,
+                "max": 7.0,
+                "step": 0.1
             },
             "noiseSpeed": {
                 "type": "float",
-                "value": 10,
-                "min": 0.1,
-                "max": 30.0,
-                "step": 0.1
+                "value": 12,
+                "min": 1,
+                "max": 15.0,
+                "step": 0.4
             }
         }
     },
     "Vignette": {
+        "numInputs": 1,
         "uniforms": {
             "intensity": {
                 "type": "float",
@@ -134,6 +265,7 @@
         }
     },
     "Saturation": {
+        "numInputs": 1,
         "uniforms": {
             "maxSaturation": {
                 "type": "float",
@@ -159,6 +291,7 @@
         }
     },
     "Point Light": {
+        "numInputs": 1,
         "uniforms": {
             "lightPosition": {
                 "type": "vec2",
@@ -169,9 +302,37 @@
             },
             "radius": {
                 "type": "float",
-                "value": 0.4,
+                "value": 0.5,
                 "min": 0.0,
-                "max": 1.5,
+                "max": 1.0,
+                "step": 0.01
+            },
+            "minAngle": {
+                "type": "float",
+                "value": 80,
+                "min": 0.0,
+                "max": 359.0,
+                "step": 1
+            },
+            "maxAngle": {
+                "type": "float",
+                "value": 120,
+                "min": 0.0,
+                "max": 359.0,
+                "step": 1
+            },
+            "lightAngle": {
+                "type": "float",
+                "value": 270,
+                "min": 0.0,
+                "max": 359.0,
+                "step": 1
+            },
+            "volumetricIntensity": {
+                "type": "float",
+                "value": 0.2,
+                "min": 0.0,
+                "max": 2.0,
                 "step": 0.05
             },
             "intensity": {
@@ -192,6 +353,7 @@
         }
     },
     "Distortion": {
+        "numInputs": 1,
         "uniforms": {
             "distortionStrength": {
                 "type": "float",
@@ -203,6 +365,7 @@
         }
     },
     "Scan Line": {
+        "numInputs": 1,
         "uniforms": {
             "intensity": {
                 "type": "float",
@@ -215,12 +378,13 @@
                 "type": "float",
                 "value": 240.0,
                 "min": 60.0,
-                "max": 576,
+                "max": 540,
                 "step": 1.0
             }
         }
     },
     "Phosphor Mask": {
+        "numInputs": 1,
         "uniforms": {
             "phosphorScale": {
                 "type": "float",
@@ -248,6 +412,7 @@
         }
     },
     "Bloom": {
+        "numInputs": 1,
         "uniforms": {
             "threshold": {
                 "type": "float",
@@ -273,6 +438,7 @@
         }
     },
     "Chromatic Aberration": {
+        "numInputs": 1,
         "uniforms": {
             "mouseFocusPoint": {
                 "type": "vec2",

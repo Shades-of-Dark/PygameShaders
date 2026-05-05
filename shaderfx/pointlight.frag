@@ -5,28 +5,44 @@ uniform sampler2D Texture;
 in vec2 v_text;
 out vec4 color;
 
-uniform vec2 lightPosition;   // light center in UV space (0–1)
-uniform vec3 lightColor;      // RGB light tint
-uniform float intensity;      // how strong the light is
-uniform float radius;         // how far it reaches
-
+uniform vec2 lightPosition;
+uniform vec3 lightColor;
+uniform float intensity;
+uniform float radius;
+uniform float minAngle;
+uniform float maxAngle;
+uniform float volumetricIntensity;
+uniform float lightAngle;
 void main()
 {
     vec4 baseColor = texture(Texture, v_text);
 
-    float dist = distance(v_text, lightPosition);
-float attenuation = clamp(1.0 - dist / radius, 0.0, 1.0);
+    // Direction to pixel
+    vec2 toPixel = v_text - lightPosition;
+    float dist = length(toPixel);
 
-// When attenuation is 0 (outside radius), color = base color
-// When attenuation > 0 (inside radius), color blends towards lit color
+    // ---- Radial falloff ----
+    float radialFalloff = pow(1.0 - clamp(dist / radius, 0.0, 1.0), 2.0);
 
-vec3 ambient = vec3(0.0); // or some ambient if you want
+    // ---- Angular falloff ----
+    vec2 dirToPixel = normalize(toPixel);
+    vec2 lightDir = vec2(cos(radians(lightAngle)), sin(radians(lightAngle)));
 
-vec3 litColor = baseColor.rgb * (ambient + lightColor * intensity * attenuation);
+    float angleCos = dot(lightDir, dirToPixel);
+    float minCos = cos(radians(minAngle * 0.5));
+    float maxCos = cos(radians(maxAngle * 0.5));
+    float angularFalloff = smoothstep(maxCos, minCos, angleCos);
 
-// Blend: if attenuation=0 -> baseColor; if attenuation=1 -> litColor
-vec3 finalColor = mix(baseColor.rgb, litColor, attenuation);
 
-color = vec4(finalColor, baseColor.a);
 
+    // ---- Combine attenuation ----
+    float totalAttenuation = radialFalloff * angularFalloff;
+
+    // ---- Volumetric glow ----
+    float volumetric = volumetricIntensity * (radialFalloff * angularFalloff);
+
+    // ---- Final lighting ----
+    vec3 litColor = baseColor.rgb * (lightColor * intensity * totalAttenuation + volumetric);
+
+    color = vec4(litColor, baseColor.a);
 }
