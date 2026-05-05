@@ -8,3 +8,9 @@ Uses pygame + GLSL.
 
 
 The name of this shader editor is the Lumos engine.
+
+
+<p align="center">
+  <img src="./samples/cueballscene.png" width="300" />
+  <img src="./samples/crtscene.png" width="300" />
+</p>
